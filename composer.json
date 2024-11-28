@@ -1,5 +1,5 @@
 {
-  "name": "wearepixel/laravel-cart",
+  "name": "joelwmale/laravel-cart",
   "version": "1.0.12",
   "description": "A cart implementation for Laravel",
   "keywords": [
@@ -15,7 +15,7 @@
     },
     {
       "name": "Joel Male",
-      "email": "joel@wearepixel.com.au"
+      "email": "joel@joelmale.com"
     }
   ],
   "require": {
@@ -32,17 +32,17 @@
   },
   "autoload": {
     "psr-4": {
-      "Wearepixel\\Cart\\": "src/"
+      "Joelwmale\\Cart\\": "src/"
     }
   },
   "minimum-stability": "dev",
   "extra": {
     "laravel": {
       "providers": [
-        "Wearepixel\\Cart\\CartServiceProvider"
+        "Joelwmale\\Cart\\CartServiceProvider"
       ],
       "aliases": {
-        "Cart": "Wearepixel\\Cart\\Facades\\CartFacade"
+        "Cart": "Joelwmale\\Cart\\Facades\\CartFacade"
       }
     }
   },
