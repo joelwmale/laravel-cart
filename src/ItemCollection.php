@@ -1,9 +1,9 @@
 <?php
 
-namespace Wearepixel\Cart;
+namespace Joelwmale\Cart;
 
 use Illuminate\Support\Collection;
-use Wearepixel\Cart\Helpers\Helpers;
+use Joelwmale\Cart\Helpers\Helpers;
 
 class ItemCollection extends Collection
 {
@@ -72,7 +72,7 @@ class ItemCollection extends Collection
         if (is_array($this['conditions'])) {
             return count($this['conditions']) > 0;
         }
-        $conditionInstance = 'Wearepixel\\Cart\\CartCondition';
+        $conditionInstance = 'Joelwmale\\Cart\\CartCondition';
         if ($this['conditions'] instanceof $conditionInstance) {
             return true;
         }

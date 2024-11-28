@@ -1,10 +1,10 @@
 <?php
 
-namespace Wearepixel\Cart;
+namespace Joelwmale\Cart;
 
-use Wearepixel\Cart\Helpers\Helpers;
-use Wearepixel\Cart\Validators\CartConditionValidator;
-use Wearepixel\Cart\Exceptions\InvalidConditionException;
+use Joelwmale\Cart\Helpers\Helpers;
+use Joelwmale\Cart\Validators\CartConditionValidator;
+use Joelwmale\Cart\Exceptions\InvalidConditionException;
 
 class CartCondition
 {

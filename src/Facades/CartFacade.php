@@ -1,6 +1,6 @@
 <?php
 
-namespace Wearepixel\Cart\Facades;
+namespace Joelwmale\Cart\Facades;
 
 use Illuminate\Support\Facades\Facade;
 

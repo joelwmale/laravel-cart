@@ -1,5 +1,5 @@
 <?php
 
-namespace Wearepixel\Cart\Exceptions;
+namespace Joelwmale\Cart\Exceptions;
 
 class UnknownModelException extends \Exception {}

@@ -1,5 +1,5 @@
 <?php
 
-namespace Wearepixel\Cart\Validators;
+namespace Joelwmale\Cart\Validators;
 
 class CartItemValidator extends Validator {}

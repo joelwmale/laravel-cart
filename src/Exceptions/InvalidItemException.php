@@ -1,5 +1,5 @@
 <?php
 
-namespace Wearepixel\Cart\Exceptions;
+namespace Joelwmale\Cart\Exceptions;
 
 class InvalidItemException extends \Exception {}

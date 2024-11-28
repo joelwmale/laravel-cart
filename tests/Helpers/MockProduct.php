@@ -1,6 +1,6 @@
 <?php
 
-namespace Wearepixel\Cart\Tests\Helpers;
+namespace Joelwmale\Cart\Tests\Helpers;
 
 use Illuminate\Contracts\Database\ModelIdentifier;
 

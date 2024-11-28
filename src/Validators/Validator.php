@@ -1,6 +1,6 @@
 <?php
 
-namespace Wearepixel\Cart\Validators;
+namespace Joelwmale\Cart\Validators;
 
 use Illuminate\Validation\Factory;
 use Illuminate\Filesystem\Filesystem;
