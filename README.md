@@ -5,7 +5,9 @@
 
 A Cart Implementation for Laravel.
 
-Supported Laravel Versions: 9, 10, and 11
+Supported Laravel Versions: 10, 11, and 12.
+
+For Laravel 9.0 and below, please use version [1.0](https://github.com/joelwmale/laravel-cart/releases/tag/1.0.12)
 
 ## Quick Demo
 
