@@ -15,6 +15,7 @@ class Cart
 
     protected $instanceName;
 
+    protected $customStorage = false;
     protected $sessionKey;
     protected $sessionKeyCartItems;
     protected $sessionKeyCartConditions;
@@ -26,39 +27,15 @@ class Cart
     protected $decimals;
     protected $decPoint;
 
-    public function __construct($session, $events, $instanceName, $session_key, $config)
+    public function __construct($session, $events, $instanceName, $sessionKey, $config)
     {
         $this->events = $events;
-        $this->session = $session;
+        $this->session = new CartSession($session, $sessionKey, $config);
         $this->instanceName = $instanceName;
-        $this->sessionKey = $session_key;
-        $this->sessionKeyCartItems = $this->sessionKey . '_cart_items';
-        $this->sessionKeyCartConditions = $this->sessionKey . '_cart_conditions';
         $this->config = $config;
         $this->currentItemId = null;
 
         $this->fireEvent('created');
-    }
-
-    /**
-     * sets the session key
-     *
-     * @param  string  $sessionKey  the session key or identifier
-     * @return $this|bool
-     *
-     * @throws \Exception
-     */
-    public function session($sessionKey)
-    {
-        if (! $sessionKey) {
-            throw new \Exception('Session key is required.');
-        }
-
-        $this->sessionKey = $sessionKey;
-        $this->sessionKeyCartItems = $this->sessionKey . '_cart_items';
-        $this->sessionKeyCartConditions = $this->sessionKey . '_cart_conditions';
-
-        return $this;
     }
 
     /**
@@ -284,10 +261,7 @@ class Cart
             return false;
         }
 
-        $this->session->put(
-            $this->sessionKeyCartItems,
-            []
-        );
+        $this->session->putItems([]);
 
         $this->fireEvent('cleared');
 
@@ -326,7 +300,9 @@ class Cart
 
         $conditions->put($condition->getName(), $condition);
 
-        $conditions = $conditions->sortBy(function ($condition, $key) {
+        $conditions = $conditions->reject(function ($condition) {
+            return empty($condition);
+        })->sortBy(function ($condition, $key) {
             return $condition->getOrder();
         });
 
@@ -342,9 +318,14 @@ class Cart
      */
     public function getConditions(bool $array = false, bool $active = false): CartConditionCollection|array
     {
-        $conditions = new CartConditionCollection(
-            $this->session->get($this->sessionKeyCartConditions)
-        );
+        $conditions = new CartConditionCollection($this->session->getConditions());
+
+        $conditions = $conditions->reject(function ($condition) {
+            return empty($condition);
+        })
+            ->transform(function ($condition) {
+                return $condition instanceof CartCondition ? $condition : new CartCondition($condition);
+            });
 
         if ($active) {
             return $conditions->filter(function (CartCondition $condition) {
@@ -488,10 +469,7 @@ class Cart
      */
     public function clearCartConditions(): void
     {
-        $this->session->put(
-            $this->sessionKeyCartConditions,
-            []
-        );
+        $this->session->putConditions([]);
     }
 
     /**
@@ -653,14 +631,11 @@ class Cart
         return $count;
     }
 
-    /**
-     * get the cart
-     *
-     * @return CartCollection
-     */
-    public function getContent()
+    public function getContent(): CartCollection
     {
-        return (new CartCollection($this->session->get($this->sessionKeyCartItems)))->reject(function ($item) {
+        return (new CartCollection($this->session->getItems()))->transform(function ($item) {
+            return $item instanceof ItemCollection ? $item : new ItemCollection($item, $this->config);
+        })->reject(function ($item) {
             return ! ($item instanceof ItemCollection);
         });
     }
@@ -734,11 +709,11 @@ class Cart
     /**
      * save the cart
      *
-     * @param    $cart  CartCollection
+     * @param  $cart  CartCollection
      */
     protected function save($cart)
     {
-        $this->session->put($this->sessionKeyCartItems, $cart);
+        $this->session->putItems($cart);
     }
 
     /**
@@ -746,7 +721,7 @@ class Cart
      */
     protected function saveConditions($conditions)
     {
-        $this->session->put($this->sessionKeyCartConditions, $conditions);
+        $this->session->putConditions($conditions);
     }
 
     /**

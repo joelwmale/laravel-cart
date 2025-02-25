@@ -20,4 +20,9 @@ class SessionMock
     {
         $this->session[$key] = $value;
     }
+
+    public function forget($key)
+    {
+        unset($this->session[$key]);
+    }
 }
