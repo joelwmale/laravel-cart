@@ -1,7 +1,11 @@
+<a name="top"></a>
+[![Laravel Cart](./docs/laravel-cart.png)](https://joelmale.com)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/joelwmale/laravel-cart.svg?style=flat-square)](https://packagist.org/packages/joelwmale/laravel-cart)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/joelwmale/laravel-cart/tests.yml?branch=master&label=Tests)](https://github.com/joelwmale/laravel-cart/actions?query=workflow%3ATests+branch%3Amaster)
 [![Total Downloads](https://img.shields.io/packagist/dt/joelwmale/laravel-cart.svg?style=flat-square)](https://packagist.org/packages/joelwmale/laravel-cart)
+[![GitHub last commit](https://img.shields.io/github/last-commit/joelwmale/laravel-cart)](#)
 [![License](https://poser.pugx.org/joelwmale/laravel-cart/license.svg)](https://packagist.org/packages/joelwmale/laravel-cart)
+[![Free](https://img.shields.io/badge/free_for_non_commercial_use-brightgreen)](#-license)
 
 A Cart Implementation for Laravel.
 
@@ -9,35 +13,58 @@ Supported Laravel Versions: 10, 11, and 12.
 
 For Laravel 9.0 and below, please use version [1.0](https://github.com/joelwmale/laravel-cart/releases/tag/1.0.12)
 
-## Quick Demo
+## Table of Contents
+- [Getting Started](#-getting-started)
+- [Demo](#-deni)
+- [Documentation](#-documentation)
+  - [Configuration](#configuration)
+  - [Basic Usage](#basic-usage)
+  - [Conditions](#conditions)
+  - [Items](#items)
+- [Credits](#-credits)
+- [License](#-license)
 
-```php
-// Add an item to the cart
-\Cart::add(1, 'Product 1', 19.99, 2, ['size' => 'large']);
-
-// Get the cart contents
-$cartContents = \Cart::getContent();
-
-// Update item quantity by its id
-\Cart::update(1, ['quantity' => 3]);
-
-// Remove an item from the cart by its id
-\Cart::remove(1);
-
-// Get cart total
-\$total = Cart::getTotal();
-
-// Clear the entire cart
-\Cart::clear();
-```
-
-## Installing
+## 🚀 Getting Started
+### 🔥 Installing
 
 Install the package through [Composer](http://getcomposer.org/).
 
 `composer require "joelwmale/laravel-cart"`
 
-## Configuration
+## 🧑‍🍳 Demo
+
+```php
+// Add an item to the cart
+\Cart::add(
+    1, // any unique id
+    'Product 1', // product name
+    19.99, // product price
+    2, // quantity
+    ['size' => 'large'] // an array of extra attributes
+);
+
+// get the entire cart
+$cartContents = \Cart::getContent();
+
+// update an item already in the cart
+\Cart::update(
+    1, // the same unique id that was used to add the item
+    ['quantity' => 3] // the quantity to update
+);
+
+// remove the item by its id
+\Cart::remove(1);
+
+// get the total of the cart
+\$total = Cart::getTotal();
+
+// clear it all when you've finished (like when you've stored the order)
+\Cart::clear();
+```
+
+## 📚 Documentation
+
+### ⚙️ Configuration
 
 You can publish the configuration file to customize various options.
 
@@ -45,7 +72,7 @@ You can publish the configuration file to customize various options.
 php artisan vendor:publish --provider="Joelwmale\Cart\CartServiceProvider" --tag="config"
 ```
 
-### Formatting Numbers
+#### Formatting Numbers
 
 The package by default does not use round to format numbers, and instead returns the number using floatval().
 
@@ -58,7 +85,7 @@ Defaults to false.
 'round_mode' => env('LARAVEL_CART_ROUND_MODE', 'down'),
 ```
 
-### Decimals
+#### Decimals
 
 You can customize the number of decimals in the configuration file.
 
@@ -68,7 +95,7 @@ Defaults to 2.
 'decimals' => env('LARAVEL_CART_DECIMALS', 2),
 ```
 
-### Round Mode
+#### Round Mode
 
 The package uses the `round` function to round the prices. You can customize the rounding mode in the configuration file.
 
@@ -78,21 +105,8 @@ Defaults to `down`.
 'round_mode' => env('LARAVEL_CART_ROUND_MODE', 'down'),
 ```
 
-## Usage
 
--   [Basic Usage](#basic-usage)
--   [Conditions](#conditions)
--   [Items](#items)
--   [Associating Models](#associating-models)
--   [Instances](#instances)
--   [Exceptions](#exceptions)
--   [Events](#events)
--   [Format Response](#format)
--   [Examples](#examples)
--   [Using Different Storage](#storage)
--   [License](#license)
-
-## Usage
+### Basic Usage
 
 The cart has a default sessionKey that holds the cart data and stores it in the session. 
 
@@ -111,7 +125,7 @@ Usually this is not required.
 \Cart::session(User::first()->id)->add(1, 'Product 1', 19.99, 2, ['size' => 'large']);
 ```
 
-### Adding to the cart: **Cart::add()**
+#### Adding to the cart: **Cart::add()**
 
 There are a few ways to add items to the cart.
 
@@ -182,7 +196,7 @@ Cart::add(
 );
 ```
 
-### Updating an item on a cart: **Cart::update()**
+#### Updating an item on a cart: **Cart::update()**
 
 ```php
 Cart::update(
@@ -221,14 +235,14 @@ Cart::update(
 );
 ```
 
-### Removing an item on a cart: **Cart::remove()**
+#### Removing an item on a cart: **Cart::remove()**
 
 ```php
 // Remove an item from the cart by its id
 Cart::remove(456);
 ```
 
-### Getting an item on a cart: **Cart::get()**
+#### Getting an item on a cart: **Cart::get()**
 
 ```php
 // Get an item from the cart by its id
@@ -238,7 +252,7 @@ Cart::get(456);
 $summedPrice = Cart::get($itemId)->getPriceSum();
 ```
 
-### Getting the cart content: **Cart::getContent()**
+#### Getting the cart content: **Cart::getContent()**
 
 ```php
 // Returns a collection of the cart's contents
@@ -258,13 +272,13 @@ Get cart total quantity: **Cart::getTotalQuantity()**
 $cartTotalQuantity = Cart::getTotalQuantity();
 ```
 
-### Cart subtotal: **Cart::getSubTotal()**
+#### Cart subtotal: **Cart::getSubTotal()**
 
 ```php
 $subTotal = Cart::getSubTotal();
 ```
 
-### Cart subtotal without conditions: **Cart::getSubTotalWithoutConditions()**
+#### Cart subtotal without conditions: **Cart::getSubTotalWithoutConditions()**
 
 ```php
 $subTotalWithoutConditions = Cart::getSubTotalWithoutConditions();
@@ -276,19 +290,19 @@ Cart Total: **Cart::getTotal()**
 $total = Cart::getTotal();
 ```
 
-### Check if cart is empty: **Cart::isEmpty()**
+#### Check if cart is empty: **Cart::isEmpty()**
 
 ```php
 Cart::isEmpty();
 ```
 
-### Clearing the Cart: **Cart::clear()**
+#### Clearing the Cart: **Cart::clear()**
 
 ```php
 Cart::clear();
 ```
 
-## Conditions
+### Conditions
 
 Conditions are very useful for adding things like discounts, taxes, shipping, etc.
 
@@ -300,9 +314,9 @@ You can provide an optional `minimum` value which should be the dollar value in 
 
 You can also provide an `order` to cart conditions which tells the cart in what order to apply the conditions. Item level conditions do not support the `order` parameter.
 
-### Conditions on the cart
+#### Conditions on the cart
 
-#### Adding a condition to the cart: **Cart::condition()**
+##### Adding a condition to the cart: **Cart::condition()**
 
 ```php
 // Add a single condition to the cart
@@ -353,7 +367,7 @@ $shipping = new \Joelwmale\Cart\CartCondition([
 Cart::condition($shipping);
 ```
 
-#### Getting conditions on the cart: **Cart::getConditions()**
+##### Getting conditions on the cart: **Cart::getConditions()**
 
 ```php
 // To get all applied conditions on a cart, use below:
@@ -372,7 +386,7 @@ foreach($cartConditions as $condition)
 }
 ```
 
-#### Getting conditions on the cart as an array: **Cart::getConditions(array: true)**
+##### Getting conditions on the cart as an array: **Cart::getConditions(array: true)**
 
 You can get all cart conditions in array format by passing "array: true". This is useful if you want to store the carts conditions on a Livewire component since by default we have collections inside collections for conditions which Livewire does not support.
 
@@ -391,7 +405,7 @@ foreach ($cartConditions as $condition) {
 }
 ```
 
-#### Getting conditions by name: **Cart::getCondition($conditionName)**
+##### Getting conditions by name: **Cart::getCondition($conditionName)**
 
 ```php
 $condition = Cart::getCondition('GST');
@@ -405,7 +419,7 @@ $condition->getMaximum(); // the maximum dollar amount of the target, needed to 
 $condition->getAttributes(); // the attributes of the condition, returns an empty [] if no attributes added
 ```
 
-#### Getting active conditions on the cart: **Cart::getConditions(active: true)**
+##### Getting active conditions on the cart: **Cart::getConditions(active: true)**
 
 You can get only active conditions by passsing `active: true` to the `getConditions()` method.
 
@@ -441,14 +455,14 @@ Cart::getConditions(active: true);
 // will return no conditions if the subtotal is $210
 ```
 
-### Calculating condition value
+##### Calculating condition value
 
 There are 2 ways to calculate the value of a condition:
 
 1. Using the `getCalculatedValue` method on the condition instance
 2. Using the `getCalculatedValueForCondition` method on the cart instance and passing the condition name
 
-#### Using the `getCalculatedValue` method on the condition instance
+##### Using the `getCalculatedValue` method on the condition instance
 
 ```php
 $subTotal = Cart::getSubTotal();
@@ -456,7 +470,7 @@ $condition = Cart::getCondition('10% GST');
 $conditionCalculatedValue = $condition->getCalculatedValue($subTotal);
 ```
 
-#### Using the `getCalculatedValueForCondition` method on the cart instance
+##### Using the `getCalculatedValueForCondition` method on the cart instance
 
 This method automatically calculates the value of a condition by it's name based on the order of the conditions.
 
@@ -489,7 +503,7 @@ Cart::getCalculatedValueForCondition('Coupon Discount'); // returns 200
 Cart::getCalculatedValueForCondition('Gift Card'); // returns 0 as the coupon discount is applied first and brings the subtotal to 0
 ```
 
-### Adding conditions that activate once a minimum value is met
+##### Adding conditions that activate once a minimum value is met
 
 You can add a `minimum` amount required for a condition to activate.
 
@@ -508,7 +522,7 @@ $tenPercentOff = new CartCondition([
 Cart::condition($tenPercentOff)
 ```
 
-### Adding conditions that only activate up to a maximum value
+##### Adding conditions that only activate up to a maximum value
 
 You can add a `maximum` amount required for a condition to activate.
 
@@ -527,7 +541,7 @@ $shipping = new CartCondition([
 Cart::condition($shipping)
 ```
 
-### Condition on items
+#### Conditions on items
 
 Item conditions are useful if you have discounts to be applied specifically on an item and not on the whole cart value.
 
@@ -588,7 +602,7 @@ Then Finally you can call **Cart::getSubTotal()** to get the Cart sub total with
 $cartSubTotal = Cart::getSubTotal();
 ```
 
-#### Add a condition to an existing item on the cart: **Cart::addItemCondition($productId, $itemCondition)**
+##### Add a condition to an existing item on the cart: **Cart::addItemCondition($productId, $itemCondition)**
 
 Adding Condition to an existing Item on the cart is simple as well.
 
@@ -602,7 +616,7 @@ $condition = new CartCondition([
 Cart::addItemCondition(456, $condition);
 ```
 
-### Clearing Cart Conditions: **Cart::clearCartConditions()**
+#### Clearing Cart Conditions: **Cart::clearCartConditions()**
 
 This clears all cart level conditions, and does not affect item level conditions.
 
@@ -616,25 +630,25 @@ If you wish to clear all conditions from all items and the cart, use **Cart::cle
 Cart::clearAllConditions()
 ```
 
-### Remove a specific cart condtion: **Cart::removeCartCondition($conditionName)**
+##### Remove a specific cart condtion: **Cart::removeCartCondition($conditionName)**
 
 ```php
 Cart::removeCartCondition('Summer Sale 5%')
 ```
 
-### Remove a specific item condition: **Cart::removeItemCondition($itemId, $conditionName)**
+##### Remove a specific item condition: **Cart::removeItemCondition($itemId, $conditionName)**
 
 ```php
 Cart::removeItemCondition(456, 'SALE 5%')
 ```
 
-### Clear all item conditions: **Cart::clearItemConditions($itemId)**
+##### Clear all item conditions: **Cart::clearItemConditions($itemId)**
 
 ```php
 Cart::clearItemConditions(456)
 ```
 
-### Get conditions by type: **Cart::getConditionsByType($type)**
+#### Get conditions by type: **Cart::getConditionsByType($type)**
 
 This returns all conditions that has been added to the cart by the type specified.
 
@@ -642,13 +656,13 @@ This returns all conditions that has been added to the cart by the type specifie
 $tax = Cart::getConditionsByType('tax');
 ```
 
-### Remove conditions by type: **Cart::removeConditionsByType($type)**
+##### Remove conditions by type: **Cart::removeConditionsByType($type)**
 
 ```php
 Cart::removeConditionsByType('tax');
 ```
 
-## Cart Items
+### Cart Items
 
 The method **Cart::getContent()** returns a collection of items.
 
@@ -670,8 +684,10 @@ $item->getPriceSumWithConditions();
 $item->getPriceSumWithConditions();
 ```
 
-## Credits
+## 🫡 Credits
 
-Huge credits to the original maintainer of the package, located at [darryldecode/laravelshoppingcart](https://github.com/darryldecode/laravelshoppingcart)
+This package was orignally created by [darryldecode](https://github.com/darryldecode) but has since seen almost no updates. I have decided to take the old package and transform it into a new package with new features and updates.
 
-We have forked this package to update it to Laravel 11 and to add some features and support for newer PHP versions.
+## 📓 License
+
+The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
