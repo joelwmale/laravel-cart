@@ -6,6 +6,9 @@ class CartSession
 {
     private $customStorage;
 
+    public $sessionKey;
+    public $driver;
+
     private $session;
 
     private $sessionId = null;
@@ -14,12 +17,15 @@ class CartSession
 
     public function __construct($session, $sessionKey, $config)
     {
-        if ($config['driver'] === 'session') {
+        $this->sessionKey = $sessionKey;
+        $this->driver = $config['driver'];
+
+        if ($this->driver === 'session') {
             $this->customStorage = false;
             $this->session = $session;
-            $this->itemsKey = $sessionKey . '_cart_items';
-            $this->conditionsKey = $sessionKey . '_cart_conditions';
-        } elseif ($config['driver'] === 'database') {
+            $this->itemsKey = $this->sessionKey . '_cart_items';
+            $this->conditionsKey = $this->sessionKey . '_cart_conditions';
+        } elseif ($this->driver === 'database') {
             $this->customStorage = true;
 
             $this->sessionId = $config['storage']['database']['id'];
@@ -27,7 +33,7 @@ class CartSession
             $this->conditionsKey = $config['storage']['database']['conditions'];
 
             // find or create the session in the database
-            $this->session = $session->firstOrNew([$this->sessionId => $sessionKey]);
+            $this->session = $session->firstOrNew([$this->sessionId => $this->sessionKey]);
 
             // initialize the items and conditions
             $this->session[$this->itemsKey] = $this->session[$this->itemsKey] ?? [];
@@ -98,5 +104,10 @@ class CartSession
         $this->session->forget($this->conditionsKey);
 
         return true;
+    }
+
+    public function getSessionModel()
+    {
+        return $this->session;
     }
 }

@@ -46,7 +46,7 @@ class CartServiceProvider extends ServiceProvider
                 $storage,
                 $events,
                 'cart',
-                '4yTlTDKu3oJOfzD',
+                session()->getId(),
                 $config
             );
         });

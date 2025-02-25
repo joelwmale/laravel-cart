@@ -21,20 +21,31 @@
   "require": {
     "php": ">=8.2",
     "illuminate/support": "^10.0|^11.0|^12.0",
+    "illuminate/auth": "^10.0|^11.0|^12.0",
+    "illuminate/container": "^10.0|^11.0|^12.0",
+    "illuminate/contracts": "^10.0|^11.0|^12.0",
+    "illuminate/database": "^10.0|^11.0|^12.0",
     "illuminate/validation": "^10.0|^11.0|^12.0",
     "illuminate/translation": "^10.0|^11.0|^12.0"
   },
   "require-dev": {
     "mockery/mockery": "^1.4.2",
     "laravel/pint": "^1.21",
+    "orchestra/testbench": "^6.23|^7.0|^8.0|^9.0|^10.0",
     "pestphp/pest": "^3.0",
-    "larapack/dd": "dev-master"
+    "larapack/dd": "dev-master",
+    "illuminate/testing": "*"
   },
   "autoload": {
     "psr-4": {
       "Joelwmale\\Cart\\": "src/"
     }
   },
+  "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
   "minimum-stability": "dev",
   "extra": {
     "laravel": {

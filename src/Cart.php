@@ -15,11 +15,6 @@ class Cart
 
     protected $instanceName;
 
-    protected $customStorage = false;
-    protected $sessionKey;
-    protected $sessionKeyCartItems;
-    protected $sessionKeyCartConditions;
-
     protected $config;
 
     protected $currentItemId;
@@ -168,7 +163,7 @@ class Cart
      */
     public function update(int|string $id, array $data): bool
     {
-        if ($this->fireEvent('Updating', $data) === false) {
+        if ($this->fireEvent('Updating', 'item', $data) === false) {
             return false;
         }
 
@@ -201,7 +196,7 @@ class Cart
 
         $this->save($cart);
 
-        $this->fireEvent('Updated', $item);
+        $this->fireEvent('Updated', 'item', $item);
 
         return true;
     }
@@ -260,7 +255,7 @@ class Cart
     {
         $cart = $this->getContent();
 
-        if ($this->fireEvent('Removing', $id) === false) {
+        if ($this->fireEvent('Removing', 'item', $id) === false) {
             return false;
         }
 
@@ -268,7 +263,7 @@ class Cart
 
         $this->save($cart);
 
-        $this->fireEvent('Removed', $id);
+        $this->fireEvent('Removed', 'item', $id);
 
         return true;
     }
@@ -714,7 +709,7 @@ class Cart
      */
     protected function addItem($id, $item)
     {
-        if ($this->fireEvent('Adding', $item) === false) {
+        if ($this->fireEvent('Adding', 'item', $item) === false) {
             return false;
         }
 
@@ -724,7 +719,7 @@ class Cart
 
         $this->save($cart);
 
-        $this->fireEvent('Added', $item);
+        $this->fireEvent('Added', 'item', $item);
 
         return true;
     }
@@ -815,9 +810,19 @@ class Cart
         $this->decimals = $decimals;
     }
 
-    protected function fireEvent($name, $value = [])
+    protected function fireEvent($name, $type = null, $data = null)
     {
-        return $this->events->dispatch('LaravelCart.' . $name, array_values([$value, $this]), true);
+        $eventData = [
+            'session_key' => $this->session->sessionKey,
+            'session_driver' => $this->session->driver,
+            'session_model' => $this->session->getSessionModel(),
+        ];
+
+        if ($type) {
+            $eventData[$type] = $data;
+        }
+
+        return $this->events->dispatch('LaravelCart.' . $name, array_values([$eventData, $this]), true);
     }
 
     /**

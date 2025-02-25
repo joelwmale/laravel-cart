@@ -22,6 +22,7 @@ For Laravel 9.0 and below, please use version [1.0](https://github.com/joelwmale
   - [Conditions](#conditions)
   - [Cart Items](#cart-items)
   - [Database Support](#database-support)
+  - [Events](#events)
 - [Credits](#-credits)
 - [License](#-license)
 
@@ -685,27 +686,147 @@ $item->getPriceSumWithConditions();
 $item->getPriceSumWithConditions();
 ```
 
-### Database Support
+### Storage Options
 
-Sometimes you might want to store the cart in the database so that the cart can be retrieved even after the user logs out or closes the browser.
+By default the cart is stored in the session, but there are times you may want to store the cart in the database.
 
-You may also find yourself wanting to add cart timeouts and support for multiple computers.
+For instance, you may want to store the cart in the database so that the cart can be retrieved even after the user logs out or closes the browser, or you may want to add cart timeouts and support for multiple computers.
 
-To get started, you'll need to create a new model for your Cart, the package requires only 3 columns, but you're free to extend this as you wish:
+#### Session
+
+The cart is stored in the session by default, using Laravel's in-built SessionManager.
+
+#### Database Support
+
+To get started, you'll need to create a new model for your Cart, the package requires only 3 columns, but you're free to extend this as you wish and add more columns.
+
+You can utilise the [events](#events) provided by the package to store additional information alongside the cart.
 
 ```php
-$table->string('session_id');
-$table->text('items');
-$table->text('conditions');
+$table->string('session_id'); // this handles the session id of the cart
+$table->text('items'); // this will store the cart items
+$table->text('conditions'); // this will store the cart level conditions
 ```
 
-Then add some json casts to your model:
+Then add some json casts to your model and fillable columns:
 
 ```php
+protected $guarded = [];
+
 protected $casts = [
     'items' => 'array',
     'conditions' => 'array',
 ];
+```
+
+Then update the configuration file to use the database driver:
+
+```php
+'driver' => 'database',
+
+'storage' => [
+    'session',
+    'database' => [
+        'model' => \App\Models\Cart::class, // your model here
+        'id' => 'session_id',
+        'items' => 'items',
+        'conditions' => 'conditions',
+    ],
+],
+```
+
+### Events
+
+The package provides a few events that you can listen to in order to manipulate the cart or take actions based on cart events.
+
+#### LaravelCart.Created
+
+This fires every time a cart is instantiated (i.e every time \Cart::add() is called)
+
+```
+Event::listen('LaravelCart.Added', function () {
+    // cart was created
+});
+```
+
+#### LaravelCart.Adding
+
+This fires every time an item is being added to the cart
+
+```
+Event::listen('LaravelCart.Adding', function ($item) {
+    // item is being added
+});
+```
+
+#### LaravelCart.Added
+
+This fires every time an item is successfully added to the cart
+
+```
+Event::listen('LaravelCart.Added', function ($item) {
+    // item was added
+});
+```
+
+#### LaravelCart.Updating
+
+This fires every time an item is being updated
+
+```
+Event::listen('LaravelCart.Updating', function ($item) {
+    // item is being updated
+});
+```
+
+#### LaravelCart.Updated
+
+This fires every time an item is successfully updated
+
+```
+Event::listen('LaravelCart.Updated', function ($item) {
+    // item was updated
+});
+```
+
+#### LaravelCart.Removing
+
+This fires every time an item is being removed
+
+```
+Event::listen('LaravelCart.Removing', function ($item) {
+    // item is being removed
+});
+```
+
+#### LaravelCart.Removed
+
+This fires every time an item is successfully removed
+
+```
+Event::listen('LaravelCart.Removed', function ($item) {
+    // item was removed
+});
+```
+
+#### LaravelCart.Clearing
+
+This fires every time the cart is being cleared
+
+```
+Event::listen('LaravelCart.Clearing', function () {
+    // cart is being cleared
+});
+```
+
+#### LaravelCart.Cleared
+
+This fires every time the cart is successfully cleared
+
+```
+Event::listen('LaravelCart.Cleared', function () {
+    // cart was cleared
+});
 ```
 
 ## 🫡 Credits
