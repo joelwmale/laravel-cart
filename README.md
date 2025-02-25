@@ -20,7 +20,8 @@ For Laravel 9.0 and below, please use version [1.0](https://github.com/joelwmale
   - [Configuration](#configuration)
   - [Basic Usage](#basic-usage)
   - [Conditions](#conditions)
-  - [Items](#items)
+  - [Cart Items](#cart-items)
+  - [Database Support](#database-support)
 - [Credits](#-credits)
 - [License](#-license)
 
@@ -682,6 +683,29 @@ $item->getPriceSumWithConditions();
 
 // Without conditions applied
 $item->getPriceSumWithConditions();
+```
+
+### Database Support
+
+Sometimes you might want to store the cart in the database so that the cart can be retrieved even after the user logs out or closes the browser.
+
+You may also find yourself wanting to add cart timeouts and support for multiple computers.
+
+To get started, you'll need to create a new model for your Cart, the package requires only 3 columns, but you're free to extend this as you wish:
+
+```php
+$table->string('session_id');
+$table->text('items');
+$table->text('conditions');
+```
+
+Then add some json casts to your model:
+
+```php
+protected $casts = [
+    'items' => 'array',
+    'conditions' => 'array',
+];
 ```
 
 ## 🫡 Credits

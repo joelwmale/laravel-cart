@@ -27,15 +27,38 @@ class Cart
     protected $decimals;
     protected $decPoint;
 
-    public function __construct($session, $events, $instanceName, $sessionKey, $config)
+    public function __construct($sessionStorage, $events, $instanceName, $sessionKey, $config)
     {
+        $this->validateConfig($config);
+
         $this->events = $events;
-        $this->session = new CartSession($session, $sessionKey, $config);
+        $this->session = new CartSession($sessionStorage, $sessionKey, $config);
         $this->instanceName = $instanceName;
         $this->config = $config;
         $this->currentItemId = null;
 
-        $this->fireEvent('created');
+        $this->fireEvent('Created');
+    }
+
+    private function validateConfig($config)
+    {
+        if ($config['driver'] == 'database') {
+            if (! isset($config['storage']['database']['model'])) {
+                throw new \Exception('You need to set a model for the database driver in the cart configuration.');
+            }
+
+            if (! isset($config['storage']['database']['id'])) {
+                throw new \Exception('You need to set an id (for the session) for the database driver in the cart configuration.');
+            }
+
+            if (! isset($config['storage']['database']['items'])) {
+                throw new \Exception('You need to set an items key for the database driver in the cart configuration.');
+            }
+
+            if (! isset($config['storage']['database']['conditions'])) {
+                throw new \Exception('You need to set a conditions key for the database driver in the cart configuration.');
+            }
+        }
     }
 
     /**
@@ -145,7 +168,7 @@ class Cart
      */
     public function update(int|string $id, array $data): bool
     {
-        if ($this->fireEvent('updating', $data) === false) {
+        if ($this->fireEvent('Updating', $data) === false) {
             return false;
         }
 
@@ -178,7 +201,7 @@ class Cart
 
         $this->save($cart);
 
-        $this->fireEvent('updated', $item);
+        $this->fireEvent('Updated', $item);
 
         return true;
     }
@@ -237,7 +260,7 @@ class Cart
     {
         $cart = $this->getContent();
 
-        if ($this->fireEvent('removing', $id) === false) {
+        if ($this->fireEvent('Removing', $id) === false) {
             return false;
         }
 
@@ -245,7 +268,7 @@ class Cart
 
         $this->save($cart);
 
-        $this->fireEvent('removed', $id);
+        $this->fireEvent('Removed', $id);
 
         return true;
     }
@@ -257,13 +280,13 @@ class Cart
      */
     public function clear()
     {
-        if ($this->fireEvent('clearing') === false) {
+        if ($this->fireEvent('Clearing') === false) {
             return false;
         }
 
         $this->session->putItems([]);
 
-        $this->fireEvent('cleared');
+        $this->fireEvent('Cleared');
 
         return true;
     }
@@ -691,7 +714,7 @@ class Cart
      */
     protected function addItem($id, $item)
     {
-        if ($this->fireEvent('adding', $item) === false) {
+        if ($this->fireEvent('Adding', $item) === false) {
             return false;
         }
 
@@ -701,7 +724,7 @@ class Cart
 
         $this->save($cart);
 
-        $this->fireEvent('added', $item);
+        $this->fireEvent('Added', $item);
 
         return true;
     }
@@ -792,12 +815,9 @@ class Cart
         $this->decimals = $decimals;
     }
 
-    /**
-     * @return mixed
-     */
     protected function fireEvent($name, $value = [])
     {
-        return $this->events->dispatch($this->getInstanceName() . '.' . $name, array_values([$value, $this]), true);
+        return $this->events->dispatch('LaravelCart.' . $name, array_values([$value, $this]), true);
     }
 
     /**

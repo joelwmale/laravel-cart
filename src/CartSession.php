@@ -14,23 +14,22 @@ class CartSession
 
     public function __construct($session, $sessionKey, $config)
     {
-        if ($this->isInternalSession($session)) {
+        if ($config['driver'] === 'session') {
             $this->customStorage = false;
             $this->session = $session;
             $this->itemsKey = $sessionKey . '_cart_items';
             $this->conditionsKey = $sessionKey . '_cart_conditions';
-        } else {
+        } elseif ($config['driver'] === 'database') {
             $this->customStorage = true;
 
-            // @TODO validate these 3 exist
-            $this->sessionId = $config['storage_id'];
-            $this->itemsKey = $config['storage_items'];
-            $this->conditionsKey = $config['storage_conditions'];
+            $this->sessionId = $config['storage']['database']['id'];
+            $this->itemsKey = $config['storage']['database']['items'];
+            $this->conditionsKey = $config['storage']['database']['conditions'];
 
-            // get the base class to do findOrCreate
-            $this->session = $config['storage'];
-            $this->session = (new $this->session)->firstOrNew([$this->sessionId => $sessionKey]);
+            // find or create the session in the database
+            $this->session = $session->firstOrNew([$this->sessionId => $sessionKey]);
 
+            // initialize the items and conditions
             $this->session[$this->itemsKey] = $this->session[$this->itemsKey] ?? [];
             $this->session[$this->conditionsKey] = $this->session[$this->conditionsKey] ?? [];
         }
