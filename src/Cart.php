@@ -521,14 +521,10 @@ class Cart
         return Helpers::formatValue(floatval($sum), $formatted, $this->config);
     }
 
-    /**
-     * get cart sub total
-     *
-     * @param  bool  $formatted
-     */
     public function getSubTotal($formatted = true): int|float|string
     {
         $subTotal = 0.00;
+
         // add all the items together with conditions applied
         $subTotalSum = $this->getContent()->sum(function (ItemCollection $item) {
             return $item->getPriceSumWithConditions(false);

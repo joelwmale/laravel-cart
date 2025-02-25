@@ -1,6 +1,7 @@
 <?php
 
 use Joelwmale\Cart\Cart;
+use Joelwmale\Cart\CartCondition;
 use Joelwmale\Cart\Tests\Helpers\MockCartModel;
 
 beforeEach(function () {
@@ -51,5 +52,59 @@ describe('database cart', function () {
         expect($this->cart->isEmpty())->toBeTrue('Cart should be empty');
         expect($this->cart->getContent()->count())->toEqual(0, 'Cart content should be 0');
         expect($cartModel->items)->toEqual([], 'The carts database table should have 0 row');
+    });
+
+    test('can add an item with an item level condition', function () {
+        $saleCondition = new CartCondition([
+            'name' => '5% Discount',
+            'type' => 'sale',
+            'value' => '-5%',
+        ]);
+
+        $item = [
+            'id' => 1,
+            'name' => 'Chicken Curry',
+            'price' => 18.95,
+            'quantity' => 1,
+            'attributes' => [],
+            'conditions' => $saleCondition,
+        ];
+
+        $this->cart->add($item);
+
+        expect($this->cart->get(1)->getPriceSum())->toEqual(18.95);
+        expect($this->cart->get(1)->getPriceSumWithConditions())->toEqual(18);
+        expect($this->cart->getSubTotal())->toEqual(18, 'Cart should have subtotal of 18');
+        expect($this->cart->getTotal())->toEqual(18, 'Cart should have total of 18');
+    });
+
+    test('can add an item with multiple item level conditions', function () {
+        $saleCondition = new CartCondition([
+            'name' => '5% Discount',
+            'type' => 'sale',
+            'value' => '-5%',
+        ]);
+
+        $gstCondition = new CartCondition([
+            'name' => 'GST',
+            'type' => 'gst',
+            'value' => '2.5%',
+        ]);
+
+        $item = [
+            'id' => 1,
+            'name' => 'Chicken Curry',
+            'price' => 18.95,
+            'quantity' => 1,
+            'attributes' => [],
+            'conditions' => [$saleCondition, $gstCondition],
+        ];
+
+        $this->cart->add($item);
+
+        expect($this->cart->get(1)->getPriceSum())->toEqual(18.95);
+        expect($this->cart->get(1)->getPriceSumWithConditions())->toEqual(18.45);
+        expect($this->cart->getSubTotal())->toEqual(18.45, 'Cart should have subtotal of 18.45');
+        expect($this->cart->getTotal())->toEqual(18.45, 'Cart should have total of 18.45');
     });
 });

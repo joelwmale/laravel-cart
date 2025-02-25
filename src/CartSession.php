@@ -70,6 +70,32 @@ class CartSession
             return $this->session->put($this->itemsKey, $value);
         }
 
+        // convert any conditions to arrays
+        $value = $value->toArray();
+
+        foreach ($value as $key => $item) {
+            if ($item['conditions']) {
+                if (is_array($item['conditions'])) {
+                    $value[$key]['conditions'] = collect($item['conditions'])->map(function ($condition) {
+                        return $condition->toArray();
+                    });
+                } else {
+                    $value[$key]['conditions'] = $item['conditions']->toArray();
+                }
+            }
+        }
+
+        // if ($value['conditions']) {
+        //     $value['conditions'] = $value['conditions']->map(function ($condition) {
+        //         return $condition->toArray();
+        //     });
+        // }
+
+        // dd($value);
+        // $value = $value->map(function ($item) {
+        //     return $item->toArray();
+        // });
+
         $this->session[$this->itemsKey] = $value;
         $this->session->save();
 
