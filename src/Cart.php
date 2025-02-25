@@ -15,10 +15,6 @@ class Cart
 
     protected $instanceName;
 
-    protected $sessionKey;
-    protected $sessionKeyCartItems;
-    protected $sessionKeyCartConditions;
-
     protected $config;
 
     protected $currentItemId;
@@ -26,39 +22,38 @@ class Cart
     protected $decimals;
     protected $decPoint;
 
-    public function __construct($session, $events, $instanceName, $session_key, $config)
+    public function __construct($sessionStorage, $events, $instanceName, $sessionKey, $config)
     {
+        $this->validateConfig($config);
+
         $this->events = $events;
-        $this->session = $session;
+        $this->session = new CartSession($sessionStorage, $sessionKey, $config);
         $this->instanceName = $instanceName;
-        $this->sessionKey = $session_key;
-        $this->sessionKeyCartItems = $this->sessionKey . '_cart_items';
-        $this->sessionKeyCartConditions = $this->sessionKey . '_cart_conditions';
         $this->config = $config;
         $this->currentItemId = null;
 
-        $this->fireEvent('created');
+        $this->fireEvent('Created');
     }
 
-    /**
-     * sets the session key
-     *
-     * @param  string  $sessionKey  the session key or identifier
-     * @return $this|bool
-     *
-     * @throws \Exception
-     */
-    public function session($sessionKey)
+    private function validateConfig($config)
     {
-        if (! $sessionKey) {
-            throw new \Exception('Session key is required.');
+        if ($config['driver'] == 'database') {
+            if (! isset($config['storage']['database']['model'])) {
+                throw new \Exception('You need to set a model for the database driver in the cart configuration.');
+            }
+
+            if (! isset($config['storage']['database']['id'])) {
+                throw new \Exception('You need to set an id (for the session) for the database driver in the cart configuration.');
+            }
+
+            if (! isset($config['storage']['database']['items'])) {
+                throw new \Exception('You need to set an items key for the database driver in the cart configuration.');
+            }
+
+            if (! isset($config['storage']['database']['conditions'])) {
+                throw new \Exception('You need to set a conditions key for the database driver in the cart configuration.');
+            }
         }
-
-        $this->sessionKey = $sessionKey;
-        $this->sessionKeyCartItems = $this->sessionKey . '_cart_items';
-        $this->sessionKeyCartConditions = $this->sessionKey . '_cart_conditions';
-
-        return $this;
     }
 
     /**
@@ -168,7 +163,7 @@ class Cart
      */
     public function update(int|string $id, array $data): bool
     {
-        if ($this->fireEvent('updating', $data) === false) {
+        if ($this->fireEvent('Updating', 'item', $data) === false) {
             return false;
         }
 
@@ -201,7 +196,7 @@ class Cart
 
         $this->save($cart);
 
-        $this->fireEvent('updated', $item);
+        $this->fireEvent('Updated', 'item', $item);
 
         return true;
     }
@@ -260,7 +255,7 @@ class Cart
     {
         $cart = $this->getContent();
 
-        if ($this->fireEvent('removing', $id) === false) {
+        if ($this->fireEvent('Removing', 'item', $id) === false) {
             return false;
         }
 
@@ -268,28 +263,33 @@ class Cart
 
         $this->save($cart);
 
-        $this->fireEvent('removed', $id);
+        $this->fireEvent('Removed', 'item', $id);
 
         return true;
     }
 
-    /**
-     * clear cart
-     *
-     * @return bool
-     */
     public function clear()
     {
-        if ($this->fireEvent('clearing') === false) {
+        if ($this->fireEvent('Clearing') === false) {
             return false;
         }
 
-        $this->session->put(
-            $this->sessionKeyCartItems,
-            []
-        );
+        $this->session->clear();
 
-        $this->fireEvent('cleared');
+        $this->fireEvent('Cleared');
+
+        return true;
+    }
+
+    public function clearItems()
+    {
+        if ($this->fireEvent('Clearing') === false) {
+            return false;
+        }
+
+        $this->session->clearItems();
+
+        $this->fireEvent('Cleared');
 
         return true;
     }
@@ -326,7 +326,9 @@ class Cart
 
         $conditions->put($condition->getName(), $condition);
 
-        $conditions = $conditions->sortBy(function ($condition, $key) {
+        $conditions = $conditions->reject(function ($condition) {
+            return empty($condition);
+        })->sortBy(function ($condition, $key) {
             return $condition->getOrder();
         });
 
@@ -342,9 +344,14 @@ class Cart
      */
     public function getConditions(bool $array = false, bool $active = false): CartConditionCollection|array
     {
-        $conditions = new CartConditionCollection(
-            $this->session->get($this->sessionKeyCartConditions)
-        );
+        $conditions = new CartConditionCollection($this->session->getConditions());
+
+        $conditions = $conditions->reject(function ($condition) {
+            return empty($condition);
+        })
+            ->transform(function ($condition) {
+                return $condition instanceof CartCondition ? $condition : new CartCondition($condition);
+            });
 
         if ($active) {
             return $conditions->filter(function (CartCondition $condition) {
@@ -488,10 +495,7 @@ class Cart
      */
     public function clearCartConditions(): void
     {
-        $this->session->put(
-            $this->sessionKeyCartConditions,
-            []
-        );
+        $this->session->putConditions([]);
     }
 
     /**
@@ -525,14 +529,10 @@ class Cart
         return Helpers::formatValue(floatval($sum), $formatted, $this->config);
     }
 
-    /**
-     * get cart sub total
-     *
-     * @param  bool  $formatted
-     */
     public function getSubTotal($formatted = true): int|float|string
     {
         $subTotal = 0.00;
+
         // add all the items together with conditions applied
         $subTotalSum = $this->getContent()->sum(function (ItemCollection $item) {
             return $item->getPriceSumWithConditions(false);
@@ -653,24 +653,16 @@ class Cart
         return $count;
     }
 
-    /**
-     * get the cart
-     *
-     * @return CartCollection
-     */
-    public function getContent()
+    public function getContent(): CartCollection
     {
-        return (new CartCollection($this->session->get($this->sessionKeyCartItems)))->reject(function ($item) {
+        return (new CartCollection($this->session->getItems()))->transform(function ($item) {
+            return $item instanceof ItemCollection ? $item : new ItemCollection($item, $this->config);
+        })->reject(function ($item) {
             return ! ($item instanceof ItemCollection);
         });
     }
 
-    /**
-     * check if cart is empty
-     *
-     * @return bool
-     */
-    public function isEmpty()
+    public function isEmpty($test = null)
     {
         return $this->getContent()->isEmpty();
     }
@@ -716,7 +708,7 @@ class Cart
      */
     protected function addItem($id, $item)
     {
-        if ($this->fireEvent('adding', $item) === false) {
+        if ($this->fireEvent('Adding', 'item', $item) === false) {
             return false;
         }
 
@@ -726,7 +718,7 @@ class Cart
 
         $this->save($cart);
 
-        $this->fireEvent('added', $item);
+        $this->fireEvent('Added', 'item', $item);
 
         return true;
     }
@@ -734,11 +726,11 @@ class Cart
     /**
      * save the cart
      *
-     * @param    $cart  CartCollection
+     * @param  $cart  CartCollection
      */
     protected function save($cart)
     {
-        $this->session->put($this->sessionKeyCartItems, $cart);
+        $this->session->putItems($cart);
     }
 
     /**
@@ -746,7 +738,7 @@ class Cart
      */
     protected function saveConditions($conditions)
     {
-        $this->session->put($this->sessionKeyCartConditions, $conditions);
+        $this->session->putConditions($conditions);
     }
 
     /**
@@ -817,12 +809,19 @@ class Cart
         $this->decimals = $decimals;
     }
 
-    /**
-     * @return mixed
-     */
-    protected function fireEvent($name, $value = [])
+    protected function fireEvent($name, $type = null, $data = null)
     {
-        return $this->events->dispatch($this->getInstanceName() . '.' . $name, array_values([$value, $this]), true);
+        $eventData = [
+            'session_key' => $this->session->sessionKey,
+            'session_driver' => $this->session->driver,
+            'session_model' => $this->session->getSessionModel(),
+        ];
+
+        if ($type) {
+            $eventData[$type] = $data;
+        }
+
+        return $this->events->dispatch('LaravelCart.' . $name, array_values([$eventData, $this]), true);
     }
 
     /**

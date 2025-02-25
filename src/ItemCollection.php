@@ -91,7 +91,37 @@ class ItemCollection extends Collection
             return [];
         }
 
-        return $this['conditions'];
+        $conditionsArray = [];
+
+        $conditions = $this['conditions'];
+
+        // check if we're already an array of CartConditions
+        foreach ($conditions as $key => $condition) {
+            if ($condition instanceof CartCondition) {
+                return $conditions;
+            }
+        }
+
+        $hasSubArray = false;
+
+        foreach ($conditions as $key => $condition) {
+            if (is_array($condition) && ! $condition instanceof CartCondition) {
+                $hasSubArray = true;
+                $conditionsArray[] = new CartCondition($condition);
+            } elseif ($condition instanceof CartCondition) {
+                $conditionsArray[] = $condition;
+            }
+        }
+
+        if (! $hasSubArray) {
+            if ($conditions instanceof CartCondition) {
+                return $conditions;
+            }
+
+            $conditionsArray[] = new CartCondition($conditions);
+        }
+
+        return $conditionsArray;
     }
 
     /**
@@ -108,14 +138,14 @@ class ItemCollection extends Collection
         $processed = 0;
 
         if ($this->hasConditions()) {
-            if (is_array($this->conditions)) {
-                foreach ($this->conditions as $condition) {
+            if (is_array($this->getConditions())) {
+                foreach ($this->getConditions() as $condition) {
                     ($processed > 0) ? $toBeCalculated = $newPrice : $toBeCalculated = $originalPrice;
                     $newPrice = $condition->applyCondition($toBeCalculated);
                     $processed++;
                 }
             } else {
-                $newPrice = $this['conditions']->applyCondition($originalPrice);
+                $newPrice = $this->getConditions()->applyCondition($originalPrice);
             }
 
             return Helpers::formatValue($newPrice, $formatted, $this->config);

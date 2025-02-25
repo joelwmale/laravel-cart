@@ -10,11 +10,11 @@ beforeEach(function () {
     $events->shouldReceive('dispatch');
 
     $this->cart = new Cart(
-        new SessionMock(),
+        new SessionMock,
         $events,
         'cart',
         'SAMPLESESSIONKEY',
-        require(__DIR__ . '/../Helpers/ConfigConditionsMock.php')
+        require (__DIR__ . '/../Helpers/ConfigConditionsMock.php')
     );
 });
 
@@ -1065,7 +1065,7 @@ describe('cart level conditions', function () {
 
         expect($this->cart->getTotal())->toEqual(90, 'Cart should have total of 90');
 
-        $this->cart->clear();
+        $this->cart->clearItems();
 
         $this->cart->add([
             'id' => 1,
@@ -1099,7 +1099,7 @@ describe('cart level conditions', function () {
 
         expect($this->cart->getTotal())->toEqual(90, 'Cart should have total of 90');
 
-        $this->cart->clear();
+        $this->cart->clearItems();
 
         $this->cart->add([
             'id' => 1,
@@ -1201,7 +1201,7 @@ describe('cart level conditions', function () {
 
         expect($this->cart->getConditions(active: true))->toHaveCount(0, 'Cart should have 0 conditions');
 
-        $this->cart->clear();
+        $this->cart->clearItems();
 
         $this->cart->add([
             'id' => 1,
