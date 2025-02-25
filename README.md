@@ -31,7 +31,7 @@ For Laravel 9.0 and below, please use version [1.0](https://github.com/joelwmale
 
 Install the package through [Composer](http://getcomposer.org/).
 
-`composer require "joelwmale/laravel-cart"`
+`composer require joelwmale/laravel-cart`
 
 ## 🧑‍🍳 Demo
 
@@ -58,7 +58,7 @@ $cartContents = \Cart::getContent();
 \Cart::remove(1);
 
 // get the total of the cart
-\$total = Cart::getTotal();
+$total = Cart::getTotal();
 
 // clear it all when you've finished (like when you've stored the order)
 \Cart::clear();
