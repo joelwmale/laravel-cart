@@ -268,18 +268,26 @@ class Cart
         return true;
     }
 
-    /**
-     * clear cart
-     *
-     * @return bool
-     */
     public function clear()
     {
         if ($this->fireEvent('Clearing') === false) {
             return false;
         }
 
-        $this->session->putItems([]);
+        $this->session->clear();
+
+        $this->fireEvent('Cleared');
+
+        return true;
+    }
+
+    public function clearItems()
+    {
+        if ($this->fireEvent('Clearing') === false) {
+            return false;
+        }
+
+        $this->session->clearItems();
 
         $this->fireEvent('Cleared');
 
@@ -654,12 +662,7 @@ class Cart
         });
     }
 
-    /**
-     * check if cart is empty
-     *
-     * @return bool
-     */
-    public function isEmpty()
+    public function isEmpty($test = null)
     {
         return $this->getContent()->isEmpty();
     }

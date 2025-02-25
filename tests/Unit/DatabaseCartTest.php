@@ -107,4 +107,20 @@ describe('database cart', function () {
         expect($this->cart->getSubTotal())->toEqual(18.45, 'Cart should have subtotal of 18.45');
         expect($this->cart->getTotal())->toEqual(18.45, 'Cart should have total of 18.45');
     });
+
+    test('can clear a simple cart', function () {
+        $this->cart->add(1, 'Sample Item', 100.99, 2, []);
+
+        expect($this->cart->isEmpty())->toBeFalse('Cart should not be empty');
+        expect($this->cart->getContent()->count())->toEqual(1, 'Cart content should be 1');
+        expect($this->cart->getContent()->first()['id'])->toEqual(1, 'Item added has ID of 1 so first content ID should be 1');
+        expect($this->cart->getContent()->first()['price'])->toEqual(100.99, 'Item added has price of 100.99 so first content price should be 100.99');
+        expect(MockCartModel::all()->count())->toEqual(1, 'The carts database table should have 1 row');
+
+        $this->cart->clear();
+
+        expect($this->cart->isEmpty())->toBeTrue('Cart should be empty');
+        expect($this->cart->getContent()->count())->toEqual(0, 'Cart content should be 0');
+        expect(MockCartModel::all()->count())->toEqual(0, 'The carts database table should have 0 rows');
+    });
 });

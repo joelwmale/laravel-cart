@@ -300,8 +300,18 @@ Cart::isEmpty();
 
 #### Clearing the Cart: **Cart::clear()**
 
+This clears all items and conditions from the cart.
+
 ```php
 Cart::clear();
+```
+
+#### Clearing the cart items only: **Cart::clearItems()**
+
+This clears all items, but keeps the conditions (useful for when you want to keep the conditions but remove the items)
+
+```php
+Cart::clearItems();
 ```
 
 ### Conditions

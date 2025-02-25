@@ -32,10 +32,8 @@ class CartSession
             $this->itemsKey = $config['storage']['database']['items'];
             $this->conditionsKey = $config['storage']['database']['conditions'];
 
-            // find or create the session in the database
             $this->session = $session->firstOrNew([$this->sessionId => $this->sessionKey]);
 
-            // initialize the items and conditions
             $this->session[$this->itemsKey] = $this->session[$this->itemsKey] ?? [];
             $this->session[$this->conditionsKey] = $this->session[$this->conditionsKey] ?? [];
         }
@@ -56,22 +54,22 @@ class CartSession
 
     public function getItems()
     {
-        return ! $this->customStorage ? $this->session->get($this->itemsKey) : $this->session[$this->itemsKey];
+        return $this->driver == 'session' ? $this->session->get($this->itemsKey) : $this->session[$this->itemsKey];
     }
 
     public function getConditions()
     {
-        return ! $this->customStorage ? $this->session->get($this->conditionsKey) : $this->session[$this->conditionsKey];
+        return $this->driver == 'session' ? $this->session->get($this->conditionsKey) : $this->session[$this->conditionsKey];
     }
 
     public function putItems($value)
     {
-        if (! $this->customStorage) {
+        if ($this->driver == 'session') {
             return $this->session->put($this->itemsKey, $value);
         }
 
         // convert any conditions to arrays
-        $value = $value->toArray();
+        $value = is_array($value) ? $value : $value->toArray();
 
         foreach ($value as $key => $item) {
             if ($item['conditions']) {
@@ -85,17 +83,6 @@ class CartSession
             }
         }
 
-        // if ($value['conditions']) {
-        //     $value['conditions'] = $value['conditions']->map(function ($condition) {
-        //         return $condition->toArray();
-        //     });
-        // }
-
-        // dd($value);
-        // $value = $value->map(function ($item) {
-        //     return $item->toArray();
-        // });
-
         $this->session[$this->itemsKey] = $value;
         $this->session->save();
 
@@ -104,7 +91,7 @@ class CartSession
 
     public function putConditions($value)
     {
-        if (! $this->customStorage) {
+        if ($this->driver == 'session') {
             return $this->session->put($this->conditionsKey, $value);
         }
 
@@ -120,16 +107,36 @@ class CartSession
         return $this->session;
     }
 
-    public function clear()
+    public function clearItems()
     {
-        if ($this->customStorage) {
-            return $this->session->delete();
+        if ($this->driver == 'session') {
+            $this->session->forget($this->itemsKey);
+
+            return true;
         }
 
-        $this->session->forget($this->itemsKey);
-        $this->session->forget($this->conditionsKey);
+        $this->session[$this->itemsKey] = [];
 
-        return true;
+        return $this->session->save();
+    }
+
+    public function clear()
+    {
+        if ($this->driver == 'session') {
+            $this->session->forget($this->itemsKey);
+            $this->session->forget($this->conditionsKey);
+
+            return true;
+        }
+
+        $deleted = $this->session->delete();
+
+        $this->session = [
+            $this->itemsKey => [],
+            $this->conditionsKey => [],
+        ];
+
+        return $deleted;
     }
 
     public function getSessionModel()
